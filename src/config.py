@@ -3,7 +3,8 @@ from functools import lru_cache
 from pathlib import Path
 
 # Get the directory where this config file is located (src/)
-BASE_DIR = Path(__file__).resolve().parent
+SRC_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SRC_DIR.parent
 
 
 class Settings(BaseSettings):
@@ -18,8 +19,8 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     llm_model: str = "gpt-3.5-turbo"
     
-    # ChromaDB
-    chroma_db_path: str = "./chroma_db"
+    # ChromaDB - use project root for chroma_db
+    chroma_db_path: str = str(PROJECT_ROOT / "chroma_db")
     collection_name: str = "policies"
     
     # RAG Settings
@@ -27,7 +28,8 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.3
     
     class Config:
-        env_file = BASE_DIR / ".env"
+        # Look for .env in both src/ and project root
+        env_file = [SRC_DIR / ".env", PROJECT_ROOT / ".env"]
         env_file_encoding = "utf-8"
 
 

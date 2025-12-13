@@ -148,3 +148,68 @@ def get_stats():
         "total_chunks": vectordb.count(),
         "total_files": len(files)
     }
+
+
+@router.post("/reindex")
+def reindex_all_files(clear_existing: bool = True):
+    """
+    Re-index all files in the data directory.
+    
+    This will:
+    1. Optionally clear the existing vector database
+    2. Re-index all .txt files in the data directory
+    
+    Use this if files were manually added to data/ or if the index is corrupted.
+    
+    Args:
+        clear_existing: If True, clears the database before re-indexing (default: True)
+    """
+    file_service = FileService()
+    ingest_service = IngestService()
+    vectordb = VectorDBService()
+    
+    files = file_service.list_files()
+    
+    if not files:
+        return {
+            "message": "No files found to index",
+            "files_processed": 0,
+            "total_chunks": 0
+        }
+    
+    # Clear existing if requested
+    if clear_existing:
+        vectordb.clear()
+    
+    total_chunks = 0
+    files_processed = []
+    
+    for file_info in files:
+        filename = file_info["filename"]
+        filepath = file_service.get_file_path(filename)
+        
+        if filepath:
+            try:
+                content = filepath.read_text(encoding="utf-8")
+                documents = content.split("\n\n")
+                chunks = ingest_service.ingest_documents(
+                    documents, 
+                    filename=filename,
+                    clear_existing=False
+                )
+                total_chunks += chunks
+                files_processed.append({
+                    "filename": filename,
+                    "chunks": chunks
+                })
+            except Exception as e:
+                files_processed.append({
+                    "filename": filename,
+                    "error": str(e)
+                })
+    
+    return {
+        "message": f"Re-indexed {len(files)} files with {total_chunks} total chunks",
+        "files_processed": files_processed,
+        "total_chunks": total_chunks
+    }

@@ -11,5 +11,8 @@ chromadb
 python-dotenv
 pydantic-settings
 
+# UI
+streamlit
+
 # Development
 requests

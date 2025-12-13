@@ -266,6 +266,30 @@ class AdminEndpoints:
         response = requests.get(f"{self.client.base_url}/admin/stats")
         self.client._print_response(response, "Knowledge Base Stats")
         return response.json()
+    
+    def reindex_all(self, clear_existing: bool = True) -> dict:
+        """
+        POST /admin/reindex
+        
+        Re-index all files in the data directory.
+        Use this if files were manually added or if the index is corrupted.
+        
+        Args:
+            clear_existing: If True, clears the database before re-indexing
+            
+        Returns:
+            {
+                "message": <str>,
+                "files_processed": [{"filename": <str>, "chunks": <int>}, ...],
+                "total_chunks": <int>
+            }
+        """
+        response = requests.post(
+            f"{self.client.base_url}/admin/reindex",
+            params={"clear_existing": clear_existing}
+        )
+        self.client._print_response(response, "Re-index All Files")
+        return response.json()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -293,6 +317,7 @@ ENDPOINTS_SUMMARY = """
 ║  DELETE /admin/files/{filename}     Delete a file + its chunks               ║
 ║  POST   /admin/ingest               Ingest documents directly                ║
 ║  GET    /admin/stats                Get knowledge base statistics            ║
+║  POST   /admin/reindex              Re-index all files (fixes sync issues)   ║
 ║                                                                              ║
 ║  📚 DOCUMENTATION                                                            ║
 ║  ─────────────────────────────────────────────────────────────────────────   ║
@@ -335,10 +360,23 @@ def run_all_tests(base_url: str = DEFAULT_BASE_URL):
         return
     
     # ─────────────────────────────────────────────────────────────
-    # Test 2: Admin - Get Stats
+    # Test 2: Admin - Re-index All Files (IMPORTANT!)
     # ─────────────────────────────────────────────────────────────
     print("\n" + "═"*80)
-    print("📋 TEST 2: Admin - Get Knowledge Base Stats")
+    print("📋 TEST 2: Admin - Re-index All Files")
+    print("═"*80)
+    
+    try:
+        result = admin.reindex_all(clear_existing=True)
+        print(f"✅ Re-indexed {result.get('total_chunks', 0)} chunks!")
+    except Exception as e:
+        print(f"❌ Re-index failed: {e}")
+    
+    # ─────────────────────────────────────────────────────────────
+    # Test 3: Admin - Get Stats
+    # ─────────────────────────────────────────────────────────────
+    print("\n" + "═"*80)
+    print("📋 TEST 3: Admin - Get Knowledge Base Stats")
     print("═"*80)
     
     try:
@@ -348,10 +386,10 @@ def run_all_tests(base_url: str = DEFAULT_BASE_URL):
         print(f"❌ Stats retrieval failed: {e}")
     
     # ─────────────────────────────────────────────────────────────
-    # Test 3: Admin - List Files
+    # Test 4: Admin - List Files
     # ─────────────────────────────────────────────────────────────
     print("\n" + "═"*80)
-    print("📋 TEST 3: Admin - List All Files")
+    print("📋 TEST 4: Admin - List All Files")
     print("═"*80)
     
     try:
@@ -361,10 +399,10 @@ def run_all_tests(base_url: str = DEFAULT_BASE_URL):
         print(f"❌ File listing failed: {e}")
     
     # ─────────────────────────────────────────────────────────────
-    # Test 4: Student Queries
+    # Test 5: Student Queries
     # ─────────────────────────────────────────────────────────────
     print("\n" + "═"*80)
-    print("📋 TEST 4: Student Queries (Testing RAG)")
+    print("📋 TEST 5: Student Queries (Testing RAG)")
     print("═"*80)
     
     sample_questions = [
@@ -383,10 +421,10 @@ def run_all_tests(base_url: str = DEFAULT_BASE_URL):
             print(f"❌ Query failed: {e}")
     
     # ─────────────────────────────────────────────────────────────
-    # Test 5: Admin - Direct Document Ingestion
+    # Test 6: Admin - Direct Document Ingestion
     # ─────────────────────────────────────────────────────────────
     print("\n" + "═"*80)
-    print("📋 TEST 5: Admin - Direct Document Ingestion")
+    print("📋 TEST 6: Admin - Direct Document Ingestion")
     print("═"*80)
     
     test_docs = [
@@ -490,6 +528,9 @@ curl -X POST http://localhost:8000/admin/ingest \\
 # Admin: Get Stats
 curl http://localhost:8000/admin/stats
 
+# Admin: Re-index All Files (IMPORTANT - run this first if files were manually added!)
+curl -X POST "http://localhost:8000/admin/reindex?clear_existing=true"
+
 # ─────────────────────────────────────────────────────────────
 # 3. Using Python requests Directly
 # ─────────────────────────────────────────────────────────────
@@ -547,3 +588,5 @@ if __name__ == "__main__":
         show_examples()
     else:
         run_all_tests(args.base_url)
+
+
