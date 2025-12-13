@@ -7,6 +7,10 @@ python-multipart
 openai
 chromadb
 
+# Document Processing
+python-docx
+PyPDF2
+
 # Configuration
 python-dotenv
 pydantic-settings

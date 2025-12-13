@@ -36,11 +36,17 @@ def index_existing_files():
         
         for file_info in files:
             filename = file_info["filename"]
-            filepath = file_service.get_file_path(filename)
             
-            if filepath:
-                try:
-                    content = filepath.read_text(encoding="utf-8")
+            # Skip unsupported files
+            if not file_service.is_supported_file(filename):
+                print(f"  ⏭️ {filename}: Skipped (unsupported format)")
+                continue
+            
+            try:
+                # Use get_file_text which handles both .txt and .docx
+                content = file_service.get_file_text(filename)
+                
+                if content:
                     documents = content.split("\n\n")
                     chunks = ingest_service.ingest_documents(
                         documents, 
@@ -49,8 +55,10 @@ def index_existing_files():
                     )
                     total_chunks += chunks
                     print(f"  ✅ {filename}: {chunks} chunks")
-                except Exception as e:
-                    print(f"  ❌ {filename}: {e}")
+                else:
+                    print(f"  ⚠️ {filename}: No text extracted")
+            except Exception as e:
+                print(f"  ❌ {filename}: {e}")
         
         print(f"🎉 Indexed {total_chunks} total chunks from {len(files)} files")
     else:

@@ -41,11 +41,27 @@ class RAGService:
     
     def _build_prompt(self, context: str, question: str) -> str:
         """Build the prompt for the LLM."""
-        return f"""You are a helpful campus assistant. Answer the student's question using ONLY the context provided below. If the answer is not in the context, say "I don't have that information."
+        return f"""You are a helpful campus policy assistant. Answer the student's question based on the policy documents provided.
 
-Context:
+FORMATTING RULES (IMPORTANT):
+- For lists, use markdown bullets with a dash and newline for EACH point:
+  - Point 1
+  - Point 2
+  - Point 3
+- Put each bullet point on its OWN LINE
+- Use **bold** for important terms
+- Keep answers concise but complete
+- Add a blank line between sections
+
+RESPONSE GUIDELINES:
+1. Synthesize information from all provided context
+2. Be specific - cite actual rules, numbers, percentages from policies
+3. If information is partial, provide what you have
+4. If no relevant info found, say "I don't have specific information about that."
+
+CONTEXT FROM POLICIES:
 {context}
 
-Student Question: {question}
+QUESTION: {question}
 
-Answer:"""
+Answer (use proper markdown formatting with each bullet on a new line):"""

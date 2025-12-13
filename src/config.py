@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     collection_name: str = "policies"
     
     # RAG Settings
-    top_k_chunks: int = 3
+    top_k_chunks: int = 5  # Retrieve more chunks for better context
     llm_temperature: float = 0.3
     
     class Config:

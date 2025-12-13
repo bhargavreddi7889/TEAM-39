@@ -39,21 +39,33 @@ async def upload_file(file: UploadFile = File(...)):
     """
     Upload a new file.
     
-    Upload a .txt file. It will be saved and automatically indexed.
-    Chunks are separated by blank lines in the file.
+    Upload a .txt or .docx file. It will be saved and automatically indexed.
+    Chunks are separated by blank lines (paragraphs) in the file.
+    
+    Supported formats: .txt, .docx
     """
-    if not file.filename.endswith(".txt"):
-        raise HTTPException(status_code=400, detail="Only .txt files are supported")
+    file_service = FileService()
+    
+    # Check if file type is supported
+    if not file_service.is_supported_file(file.filename):
+        raise HTTPException(
+            status_code=400, 
+            detail="Unsupported file type. Supported formats: .txt, .docx"
+        )
     
     # Read file content
     content = await file.read()
     
     # Save file to data directory
-    file_service = FileService()
     saved = file_service.save_file(file.filename, content)
     
+    # Extract text from file (handles both .txt and .docx)
+    text_content = file_service.extract_text_from_bytes(content, file.filename)
+    
+    # Split into chunks by paragraphs
+    documents = text_content.split("\n\n")
+    
     # Ingest into vector database
-    documents = content.decode("utf-8").split("\n\n")
     ingest_service = IngestService()
     chunks_added = ingest_service.ingest_documents(
         documents, 
@@ -82,10 +94,19 @@ def download_file(filename: str):
     if not filepath:
         raise HTTPException(status_code=404, detail=f"File '{filename}' not found")
     
+    # Determine media type based on file extension
+    ext = filepath.suffix.lower()
+    media_types = {
+        ".txt": "text/plain",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".pdf": "application/pdf"
+    }
+    media_type = media_types.get(ext, "application/octet-stream")
+    
     return FileResponse(
         path=filepath,
         filename=filename,
-        media_type="text/plain"
+        media_type=media_type
     )
 
 
@@ -157,7 +178,7 @@ def reindex_all_files(clear_existing: bool = True):
     
     This will:
     1. Optionally clear the existing vector database
-    2. Re-index all .txt files in the data directory
+    2. Re-index all supported files (.txt, .docx) in the data directory
     
     Use this if files were manually added to data/ or if the index is corrupted.
     
@@ -186,11 +207,21 @@ def reindex_all_files(clear_existing: bool = True):
     
     for file_info in files:
         filename = file_info["filename"]
-        filepath = file_service.get_file_path(filename)
         
-        if filepath:
-            try:
-                content = filepath.read_text(encoding="utf-8")
+        # Skip unsupported files
+        if not file_service.is_supported_file(filename):
+            files_processed.append({
+                "filename": filename,
+                "error": "Unsupported file type",
+                "chunks": 0
+            })
+            continue
+        
+        try:
+            # Use get_file_text which handles both .txt and .docx
+            content = file_service.get_file_text(filename)
+            
+            if content:
                 documents = content.split("\n\n")
                 chunks = ingest_service.ingest_documents(
                     documents, 
@@ -202,11 +233,18 @@ def reindex_all_files(clear_existing: bool = True):
                     "filename": filename,
                     "chunks": chunks
                 })
-            except Exception as e:
+            else:
                 files_processed.append({
                     "filename": filename,
-                    "error": str(e)
+                    "error": "Could not extract text",
+                    "chunks": 0
                 })
+        except Exception as e:
+            files_processed.append({
+                "filename": filename,
+                "error": str(e),
+                "chunks": 0
+            })
     
     return {
         "message": f"Re-indexed {len(files)} files with {total_chunks} total chunks",

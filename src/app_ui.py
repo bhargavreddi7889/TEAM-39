@@ -299,8 +299,12 @@ def show_student():
     if st.session_state.chat_history:
         st.divider()
         for i, chat in enumerate(st.session_state.chat_history):
+            # User question
             st.markdown(f'<div class="chat-user"><strong>🧑‍🎓 You</strong> ({chat["time"]})<br>{chat["q"]}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="chat-bot"><strong>🤖 CampusOps AI</strong><br>{chat["a"]}</div>', unsafe_allow_html=True)
+            
+            # Bot answer - using container for proper markdown rendering
+            st.markdown('<div class="chat-bot"><strong>🤖 CampusOps AI</strong></div>', unsafe_allow_html=True)
+            st.markdown(chat["a"])  # Render markdown (bullets, etc.)
             
             if chat["sources"]:
                 with st.expander(f"📚 Sources ({len(chat['sources'])})"):
@@ -385,16 +389,27 @@ def admin_files():
     
     # Upload
     st.markdown("### ⬆️ Upload New File")
-    uploaded = st.file_uploader("Choose a .txt file", type=["txt"])
+    st.caption("Supported formats: .txt, .docx, .pdf")
+    uploaded = st.file_uploader("Choose a file", type=["txt", "docx", "pdf"])
     
     if uploaded:
-        st.info(f"Selected: {uploaded.name} ({uploaded.size} bytes)")
+        file_ext = uploaded.name.split('.')[-1].lower()
+        st.info(f"Selected: {uploaded.name} ({uploaded.size} bytes) - Type: .{file_ext}")
         
-        with st.expander("📖 Preview"):
-            st.text(uploaded.getvalue().decode("utf-8")[:1000])
+        # Preview (only for text files)
+        if file_ext == "txt":
+            with st.expander("📖 Preview"):
+                try:
+                    st.text(uploaded.getvalue().decode("utf-8")[:1000])
+                except:
+                    st.warning("Could not preview file")
+        elif file_ext == "docx":
+            st.caption("📄 Word document - preview not available")
+        elif file_ext == "pdf":
+            st.caption("📑 PDF document - preview not available")
         
         if st.button("📤 Upload & Index", type="primary"):
-            with st.spinner("Uploading..."):
+            with st.spinner("Uploading and extracting text..."):
                 result = api_upload_file(uploaded)
             
             if "error" not in result:
@@ -511,7 +526,8 @@ def admin_test():
             
             if "error" not in result:
                 st.markdown("### 📝 Answer")
-                st.info(result.get("answer", "No answer"))
+                # Use markdown to render bullet points properly
+                st.markdown(result.get("answer", "No answer"))
                 
                 st.markdown("### 📚 Sources")
                 for i, src in enumerate(result.get("sources", [])):

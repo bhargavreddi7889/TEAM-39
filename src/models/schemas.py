@@ -47,6 +47,7 @@ class FileInfo(BaseModel):
     filename: str
     size_bytes: int
     uploaded_at: str
+    file_type: Optional[str] = None
 
 
 class FileListResponse(BaseModel):
