@@ -36,3 +36,35 @@ class HealthResponse(BaseModel):
     """Health check response."""
     status: str
     chunks_in_db: int
+
+
+# ─────────────────────────────────────────────────────────────
+# File Management Schemas
+# ─────────────────────────────────────────────────────────────
+
+class FileInfo(BaseModel):
+    """Information about an uploaded file."""
+    filename: str
+    size_bytes: int
+    uploaded_at: str
+
+
+class FileListResponse(BaseModel):
+    """Response with list of all files."""
+    files: list[FileInfo]
+    total_count: int
+
+
+class FileUploadResponse(BaseModel):
+    """Response after file upload."""
+    message: str
+    filename: str
+    size_bytes: int
+    chunks_added: int
+
+
+class FileDeleteResponse(BaseModel):
+    """Response after file deletion."""
+    message: str
+    filename: str
+    chunks_deleted: int

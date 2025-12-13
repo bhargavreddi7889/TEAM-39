@@ -1,4 +1,4 @@
-from campusops.core import EmbeddingService, VectorDBService
+from src.core import EmbeddingService, VectorDBService
 
 
 class IngestService:
@@ -8,12 +8,18 @@ class IngestService:
         self.embedder = EmbeddingService()
         self.vectordb = VectorDBService()
     
-    def ingest_documents(self, documents: list[str], clear_existing: bool = True) -> int:
+    def ingest_documents(
+        self, 
+        documents: list[str], 
+        filename: str = None,
+        clear_existing: bool = False
+    ) -> int:
         """
         Ingest documents into the vector database.
         
         Args:
             documents: List of text chunks to ingest
+            filename: Source filename for tracking
             clear_existing: Whether to clear existing documents first
             
         Returns:
@@ -25,7 +31,7 @@ class IngestService:
         if not documents:
             return 0
         
-        print(f"📄 Processing {len(documents)} documents...")
+        print(f"📄 Processing {len(documents)} chunks from {filename or 'unknown'}...")
         
         # Clear existing if requested
         if clear_existing:
@@ -37,8 +43,8 @@ class IngestService:
         embeddings = self.embedder.embed_texts(documents)
         print(f"✅ Generated {len(embeddings)} embeddings (dim: {len(embeddings[0])})")
         
-        # Add to vector database
-        count = self.vectordb.add_documents(documents, embeddings)
+        # Add to vector database with filename metadata
+        count = self.vectordb.add_documents(documents, embeddings, filename=filename)
         print(f"✅ Ingested {count} chunks into ChromaDB")
         
         return count
@@ -54,8 +60,11 @@ class IngestService:
         Returns:
             Number of chunks ingested
         """
+        import os
+        filename = os.path.basename(filepath)
+        
         with open(filepath, "r") as f:
             content = f.read()
         
         documents = content.split(separator)
-        return self.ingest_documents(documents)
+        return self.ingest_documents(documents, filename=filename)

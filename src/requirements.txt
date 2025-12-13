@@ -1,0 +1,15 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# AI/ML
+openai
+chromadb
+
+# Configuration
+python-dotenv
+pydantic-settings
+
+# Development
+requests

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from campusops.models import QueryRequest, QueryResponse
-from campusops.services import RAGService
+from src.models import QueryRequest, QueryResponse
+from src.services import RAGService
 
 router = APIRouter()
 

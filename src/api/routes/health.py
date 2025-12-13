@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from campusops.models import HealthResponse
-from campusops.core import VectorDBService
+from src.models import HealthResponse
+from src.core import VectorDBService
 
 router = APIRouter()
 

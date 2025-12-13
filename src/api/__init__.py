@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from campusops.api.routes import query, admin, health
+from src.api.routes import query, admin, health
 
 api_router = APIRouter()
 

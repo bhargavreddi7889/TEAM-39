@@ -1,5 +1,9 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
+
+# Get the directory where this config file is located (src/)
+BASE_DIR = Path(__file__).resolve().parent
 
 
 class Settings(BaseSettings):
@@ -23,7 +27,7 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.3
     
     class Config:
-        env_file = ".env"
+        env_file = BASE_DIR / ".env"
         env_file_encoding = "utf-8"
 
 

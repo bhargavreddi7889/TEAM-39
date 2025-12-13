@@ -1,5 +1,6 @@
 import chromadb
-from campusops.config import get_settings
+import uuid
+from src.config import get_settings
 
 
 class VectorDBService:
@@ -11,13 +12,24 @@ class VectorDBService:
         self.collection = self.client.get_or_create_collection(settings.collection_name)
         self.top_k = settings.top_k_chunks
     
-    def add_documents(self, documents: list[str], embeddings: list[list[float]]) -> int:
+    def add_documents(
+        self, 
+        documents: list[str], 
+        embeddings: list[list[float]], 
+        filename: str = None
+    ) -> int:
         """Add documents with their embeddings to the database."""
-        ids = [f"doc{i}" for i in range(len(documents))]
+        # Use UUIDs for unique IDs
+        ids = [str(uuid.uuid4()) for _ in documents]
+        
+        # Store filename as metadata for each chunk
+        metadatas = [{"filename": filename or "unknown"} for _ in documents]
+        
         self.collection.add(
             documents=documents,
             embeddings=embeddings,
-            ids=ids
+            ids=ids,
+            metadatas=metadatas
         )
         return len(documents)
     
@@ -33,6 +45,18 @@ class VectorDBService:
     def count(self) -> int:
         """Get the number of documents in the collection."""
         return self.collection.count()
+    
+    def delete_by_filename(self, filename: str) -> int:
+        """Delete all chunks associated with a filename."""
+        # Get all documents with this filename
+        results = self.collection.get(
+            where={"filename": filename}
+        )
+        
+        if results["ids"]:
+            self.collection.delete(ids=results["ids"])
+            return len(results["ids"])
+        return 0
     
     def clear(self):
         """Clear all documents from the collection."""

@@ -1,5 +1,5 @@
 from openai import OpenAI
-from campusops.config import get_settings
+from src.config import get_settings
 
 
 class EmbeddingService:

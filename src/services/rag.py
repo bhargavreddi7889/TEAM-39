@@ -1,4 +1,4 @@
-from campusops.core import EmbeddingService, LLMService, VectorDBService
+from src.core import EmbeddingService, LLMService, VectorDBService
 
 
 class RAGService:

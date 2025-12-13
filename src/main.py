@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from campusops.api import api_router
-from campusops.config import get_settings
+from src.api import api_router
+from src.config import get_settings
 
 settings = get_settings()
 
