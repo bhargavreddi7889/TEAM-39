@@ -9,6 +9,7 @@ class EmbeddingService:
         settings = get_settings()
         self.client = OpenAI(api_key=settings.openai_api_key)
         self.model = settings.embedding_model
+        print(f"✅ Using OpenAI for embeddings (model: {self.model})")
     
     def embed_text(self, text: str) -> list[float]:
         """Generate embedding for a single text."""
@@ -25,3 +26,4 @@ class EmbeddingService:
             input=texts
         )
         return [item.embedding for item in response.data]
+    

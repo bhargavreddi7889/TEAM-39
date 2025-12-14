@@ -14,8 +14,10 @@ class Settings(BaseSettings):
     app_name: str = "CampusOps AI"
     debug: bool = False
     
-    # OpenAI
+    # OpenAI Configuration (Required)
     openai_api_key: str
+    
+    # Model settings
     embedding_model: str = "text-embedding-3-small"
     llm_model: str = "gpt-3.5-turbo"
     

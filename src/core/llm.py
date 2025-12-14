@@ -10,6 +10,7 @@ class LLMService:
         self.client = OpenAI(api_key=settings.openai_api_key)
         self.model = settings.llm_model
         self.temperature = settings.llm_temperature
+        print(f"✅ Using OpenAI for LLM (model: {self.model})")
     
     def generate(self, prompt: str) -> str:
         """Generate a response from the LLM."""
