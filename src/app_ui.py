@@ -17,7 +17,7 @@ from datetime import datetime
 # Configuration
 # ═══════════════════════════════════════════════════════════════════════════════
 
-API_BASE_URL = "http://brahamand.ai:8000"
+API_BASE_URL = "http://brahamand.ai:9000"
 
 # Demo credentials
 USERS = {
@@ -497,8 +497,8 @@ def api_reindex(clear=True):
 def show_login():
     # Hero Section
     st.markdown('''
-    <div style="text-align: center; padding: 3rem 0 2rem 0;">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">🎓</div>
+    <div style="text-align: center; padding: 2rem 0 1rem 0;">
+        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🎓</div>
     </div>
     ''', unsafe_allow_html=True)
     
@@ -517,27 +517,18 @@ def show_login():
             st.info("💡 **Tip:** Make sure the API server is running before logging in.")
             return
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Login Form
+    # Login Form (removed extra whitespace)
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown('''
-        <div style="background: white; padding: 2rem; border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-        </div>
-        ''', unsafe_allow_html=True)
-        
         tab1, tab2 = st.tabs(["👨‍🎓 Student Login", "👨‍💼 Admin Login"])
         
         with tab1:
             st.markdown("### Welcome, Student!")
-            st.info("📝 **Demo Credentials**\n\nUsername: `student`\n\nPassword: `student123`", icon="💡")
             
             with st.form("student_form"):
                 user = st.text_input("👤 Username", key="s_user", placeholder="Enter your username")
                 pwd = st.text_input("🔒 Password", type="password", key="s_pwd", placeholder="Enter your password")
-                st.markdown("<br>", unsafe_allow_html=True)
                 if st.form_submit_button("🚀 Sign In as Student", use_container_width=True, type="primary"):
                     if user in USERS and USERS[user]["password"] == pwd and USERS[user]["role"] == "student":
                         st.session_state.logged_in = True
@@ -550,12 +541,10 @@ def show_login():
         
         with tab2:
             st.markdown("### Admin Portal")
-            st.info("🔐 **Demo Credentials**\n\nUsername: `admin`\n\nPassword: `admin123`", icon="💡")
             
             with st.form("admin_form"):
                 user = st.text_input("👤 Username", key="a_user", placeholder="Enter admin username")
                 pwd = st.text_input("🔒 Password", type="password", key="a_pwd", placeholder="Enter admin password")
-                st.markdown("<br>", unsafe_allow_html=True)
                 if st.form_submit_button("🚀 Sign In as Admin", use_container_width=True, type="primary"):
                     if user in USERS and USERS[user]["password"] == pwd and USERS[user]["role"] == "admin":
                         st.session_state.logged_in = True
@@ -566,10 +555,10 @@ def show_login():
                     else:
                         st.error("❌ Invalid credentials. Please try again.")
     
-    # Footer
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    # Footer (reduced padding)
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('''
-    <div style="text-align: center; color: #94A3B8; font-size: 0.9rem; padding: 2rem 0;">
+    <div style="text-align: center; color: #94A3B8; font-size: 0.9rem; padding: 1rem 0;">
         <p>🔒 Secure • 🚀 Fast • 🎯 Accurate</p>
         <p style="margin-top: 0.5rem;">Powered by AI & RAG Technology</p>
     </div>
@@ -600,23 +589,6 @@ def show_student():
                 st.metric("Chunks", stats.get("total_chunks", 0))
             with col2:
                 st.metric("Docs", stats.get("total_files", 0))
-        
-        st.divider()
-        
-        # Quick Questions
-        st.markdown('<h3 class="sidebar-section-title">💡 Quick Questions</h3>', unsafe_allow_html=True)
-        
-        questions = [
-            ("📚 Attendance Policy", "What is the minimum attendance requirement?"),
-            ("📝 Exam Rules", "What are the examination rules and regulations?"),
-            ("🎯 Placements", "Tell me about the placement policy and eligibility"),
-            ("📅 Academic Calendar", "When does the semester start and what is the calendar?"),
-        ]
-        
-        for icon_label, q in questions:
-            if st.button(icon_label, key=f"q_{q[:20]}", use_container_width=True):
-                st.session_state.pending_question = q
-                st.rerun()
         
         st.divider()
         
@@ -705,14 +677,9 @@ def show_student():
         st.info("""
         👋 **Welcome to CampusOps AI!**
         
-        I'm here to help you with:
-        - 📚 Attendance policies and requirements
-        - 📝 Examination rules and schedules  
-        - 🎯 Placement eligibility and procedures
-        - 📅 Academic calendars and deadlines
-        - 📖 Campus regulations and guidelines
+        Ask me anything about campus policies, rules, and procedures.
         
-        💡 **Tip:** Click the quick questions in the sidebar or type your own question above!
+        💡 **Tip:** Type your question above to get started!
         """, icon="🎓")
 
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -41,27 +41,26 @@ class RAGService:
     
     def _build_prompt(self, context: str, question: str) -> str:
         """Build the prompt for the LLM."""
-        return f"""You are a helpful campus policy assistant. Answer the student's question based on the policy documents provided.
+        return f"""You are a helpful campus policy assistant. Answer the student's question based ONLY on the policy documents provided below.
 
 FORMATTING RULES (IMPORTANT):
-- For lists, use markdown bullets with a dash and newline for EACH point:
-  - Point 1
-  - Point 2
-  - Point 3
-- Put each bullet point on its OWN LINE
-- Use **bold** for important terms
-- Keep answers concise but complete
+- For lists, use markdown bullets (- ) with each point on a NEW LINE
+- Use **bold** for important terms, percentages, and numbers
+- Keep answers clear, concise, and well-structured
 - Add a blank line between sections
+- Use proper paragraphs for better readability
 
 RESPONSE GUIDELINES:
-1. Synthesize information from all provided context
-2. Be specific - cite actual rules, numbers, percentages from policies
-3. If information is partial, provide what you have
-4. If no relevant info found, say "I don't have specific information about that."
+1. Answer ONLY based on the provided context - don't make up information
+2. Be specific - cite actual rules, numbers, percentages, dates from the policies
+3. If multiple points, format as a bulleted list with each point on a separate line
+4. If the context doesn't contain relevant information, say "I don't have specific information about that in the available policy documents."
+5. Synthesize information from all relevant context provided
+6. Be direct and factual - students need accurate policy information
 
-CONTEXT FROM POLICIES:
+POLICY DOCUMENTS CONTEXT:
 {context}
 
-QUESTION: {question}
+STUDENT QUESTION: {question}
 
-Answer (use proper markdown formatting with each bullet on a new line):"""
+ANSWER (use proper markdown formatting):"""
